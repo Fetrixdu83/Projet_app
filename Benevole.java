@@ -1,10 +1,10 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Benevole extends Utilisateur {
-    String Service;
-    private List<Service> servicesProposes;
-
+public class Benevole extends User {
+    /*String Service;
+    private final List<Service> servicesProposes;
+    private final List<>
     public Benevole(String nom, String email) {
         super(nom, email, "benevole");
         this.servicesProposes = new ArrayList<>();
@@ -14,6 +14,6 @@ public class Benevole extends Utilisateur {
     public void proposerAide(Service service) {
         servicesProposes.add(service);
     }
-
+*/
     // Getters et Setters
 }
