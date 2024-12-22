@@ -49,7 +49,6 @@ public class TaskManagementAppTest {
             int userId = rs.getInt("id");
             rs.close();
             stmtSelect.close();
-            System.out.println("aaaa\n\n"+userId );
             // Tester la fonction
             String role = TaskManagementApp.getUserRole(connection, userId);
 
