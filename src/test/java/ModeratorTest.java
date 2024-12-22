@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -26,20 +27,41 @@ public class ModeratorTest {
         }
     }
 
+
+
     @Test
     void testValiderTache() {
         try {
-            // Ajouter une tâche en attente
-            String insertQuery = "INSERT INTO tasks (description, status, created_by) VALUES (?, 'EN_ATTENTE_VALIDATION', ?)";
+            String insertQuery = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
             PreparedStatement stmtInsert = connection.prepareStatement(insertQuery);
-            stmtInsert.setString(1, "Tâche en attente pour le test");
-            stmtInsert.setInt(2, 1);
+            stmtInsert.setString(1, "benef_test");
+            stmtInsert.setString(2, "password");
+            stmtInsert.setString(3, "BENEFICIAIRE");
+            stmtInsert.executeUpdate();
+
+            // Récupérer l'ID des utilisateurs insérés
+            String selectQuery = "SELECT id FROM users WHERE username = ?";
+            PreparedStatement stmtSelect = connection.prepareStatement(selectQuery);
+            stmtSelect.setString(1, "benef_test");
+            ResultSet rsid = stmtSelect.executeQuery();
+            assertTrue(rsid.next(), "Aucun utilisateur trouvé pour le test.");
+            int userId = rsid.getInt("id");
+
+
+            rsid.close();
+            stmtSelect.close();
+
+
+            // Ajouter une tâche en attente
+            insertQuery = "INSERT INTO tasks (description, status, created_by) VALUES ('Tâche en attente pour le test', 'EN_ATTENTE_VALIDATION', ?)";
+            stmtInsert = connection.prepareStatement(insertQuery);
+            stmtInsert.setInt(1, userId);
             stmtInsert.executeUpdate();
             stmtInsert.close();
 
             // Récupérer l'ID de la tâche
-            String selectQuery = "SELECT id FROM tasks WHERE description = 'Tâche en attente pour le test'";
-            PreparedStatement stmtSelect = connection.prepareStatement(selectQuery);
+            selectQuery = "SELECT id FROM tasks WHERE description = 'Tâche en attente pour le test'";
+            stmtSelect = connection.prepareStatement(selectQuery);
             ResultSet rs = stmtSelect.executeQuery();
             rs.next();
             int taskId = rs.getInt("id");
@@ -65,6 +87,10 @@ public class ModeratorTest {
             PreparedStatement stmtDelete = connection.prepareStatement(deleteQuery);
             stmtDelete.setInt(1, taskId);
             stmtDelete.executeUpdate();
+            deleteQuery = "DELETE FROM users WHERE username = 'benef_test'";
+            stmtDelete = connection.prepareStatement(deleteQuery);
+            stmtDelete.executeUpdate();
+            stmtDelete.close();
             stmtDelete.close();
         } catch (SQLException e) {
             fail("Erreur lors du test de validation de tâche : " + e.getMessage());

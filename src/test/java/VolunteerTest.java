@@ -29,15 +29,49 @@ public class VolunteerTest {
     @Test
     void testAccepterTache() {
         try {
-            String insertQuery = "INSERT INTO tasks (description, status, created_by) VALUES ('Tâche libre pour le test', 'LIBRE', ?)";
+            // Insérer 2 utilisateurs fictifs dans la base de données pour le test
+            String insertQuery = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
             PreparedStatement stmtInsert = connection.prepareStatement(insertQuery);
-            stmtInsert.setInt(1, 1);
+            stmtInsert.setString(1, "benef_test");
+            stmtInsert.setString(2, "password");
+            stmtInsert.setString(3, "BENEFICIAIRE");
+            stmtInsert.executeUpdate();
+            insertQuery = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+            stmtInsert = connection.prepareStatement(insertQuery);
+            stmtInsert.setString(1, "benev_test");
+            stmtInsert.setString(2, "password");
+            stmtInsert.setString(3, "BENEVOLE");
+            stmtInsert.executeUpdate();
+            stmtInsert.close();
+
+            // Récupérer l'ID des utilisateurs insérés
+            String selectQuery = "SELECT id FROM users WHERE username = ?";
+            PreparedStatement stmtSelect = connection.prepareStatement(selectQuery);
+            stmtSelect.setString(1, "benef_test");
+            ResultSet rsid = stmtSelect.executeQuery();
+            assertTrue(rsid.next(), "Aucun utilisateur trouvé pour le test.");
+            int userIdBenef = rsid.getInt("id");
+
+            selectQuery = "SELECT id FROM users WHERE username = ?";
+            stmtSelect = connection.prepareStatement(selectQuery);
+            stmtSelect.setString(1, "benev_test");
+            rsid = stmtSelect.executeQuery();
+            assertTrue(rsid.next(), "Aucun utilisateur trouvé pour le test.");
+            int userIdBenev = rsid.getInt("id");
+
+            rsid.close();
+            stmtSelect.close();
+
+            // Ajoute une TAche
+            insertQuery = "INSERT INTO tasks (description, status, created_by) VALUES ('Tâche libre pour le test', 'LIBRE', ?)";
+            stmtInsert = connection.prepareStatement(insertQuery);
+            stmtInsert.setInt(1, userIdBenef);
             stmtInsert.executeUpdate();
             stmtInsert.close();
 
             // Récupérer l'ID de la tâche
-            String selectQuery = "SELECT id FROM tasks WHERE description = 'Tâche libre pour le test'";
-            PreparedStatement stmtSelect = connection.prepareStatement(selectQuery);
+            selectQuery = "SELECT id FROM tasks WHERE description = 'Tâche libre pour le test'";
+            stmtSelect = connection.prepareStatement(selectQuery);
             ResultSet rs = stmtSelect.executeQuery();
             rs.next();
             int taskId = rs.getInt("id");
@@ -45,7 +79,7 @@ public class VolunteerTest {
 
             // Accepter la tâche
             Scanner scanner = new Scanner(taskId + "\n");
-            Volunteer.accepterTache(connection, scanner, 1);
+            Volunteer.accepterTache(connection, scanner, userIdBenev);
 
             // Vérifier que la tâche a été acceptée
             String checkQuery = "SELECT status FROM tasks WHERE id = ?";
@@ -62,6 +96,13 @@ public class VolunteerTest {
             String deleteQuery = "DELETE FROM tasks WHERE id = ?";
             PreparedStatement stmtDelete = connection.prepareStatement(deleteQuery);
             stmtDelete.setInt(1, taskId);
+            stmtDelete.executeUpdate();
+            deleteQuery = "DELETE FROM users WHERE username = 'benef_test'";
+            stmtDelete = connection.prepareStatement(deleteQuery);
+            stmtDelete.executeUpdate();
+            stmtDelete.close();
+            deleteQuery = "DELETE FROM users WHERE username = 'benev_test'";
+            stmtDelete = connection.prepareStatement(deleteQuery);
             stmtDelete.executeUpdate();
             stmtDelete.close();
         } catch (SQLException e) {

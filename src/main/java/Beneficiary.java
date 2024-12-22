@@ -59,12 +59,15 @@ public class Beneficiary {
             System.out.print("Entrez la description de la nouvelle tâche : ");
             String description = scanner.nextLine();
 
+
             String query = "INSERT INTO tasks (description, status, created_by) VALUES (?, 'EN_ATTENTE_VALIDATION', ?)";
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setString(1, description);
             stmt.setInt(2, beneficiaryId);
 
+
             int rowsInserted = stmt.executeUpdate();
+
             if (rowsInserted > 0) {
                 System.out.println("Nouvelle tâche postée avec succès. Elle est en attente de validation.");
             } else {
@@ -73,6 +76,7 @@ public class Beneficiary {
 
             stmt.close();
         } catch (SQLException e) {
+
             System.out.println("Erreur lors de la création de la tâche : " + e.getMessage());
         }
     }
